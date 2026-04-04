@@ -1,0 +1,2090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adobe Sticky Notes | Professional Digital Workspace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2d2d86;
+            --primary-light: #4a4aa2;
+            --secondary: #ff7b54;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --yellow: #ffeb3b;
+            --pink: #e91e63;
+            --blue: #2196f3;
+            --green: #4caf50;
+            --orange: #ff9800;
+            --purple: #9c27b0;
+            --teal: #009688;
+            --gray: #9e9e9e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--light);
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .logo i {
+            color: var(--secondary);
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background: var(--teal);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+
+        .color-btn {
+            width: 30px;
+            height: 30px;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+
+        .color-btn.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(255,255,255,0.8);
+        }
+
+        .search-container {
+            position: relative;
+            margin-left: 15px;
+        }
+
+        .search-input {
+            padding: 10px 15px;
+            padding-left: 40px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 14px;
+            width: 250px;
+            backdrop-filter: blur(5px);
+            transition: width 0.3s ease;
+        }
+
+        .search-input:focus {
+            width: 300px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .board {
+            position: relative;
+            min-height: calc(100vh - 200px);
+            padding: 40px;
+            overflow: hidden;
+        }
+
+        .sticky-note {
+            position: absolute;
+            width: 200px;
+            min-height: 200px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            cursor: move;
+            user-select: none;
+            transition: all 0.3s ease;
+            font-family: 'Comic Sans MS', cursive;
+            font-size: 14px;
+            line-height: 1.4;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .sticky-note:hover {
+            transform: rotate(1deg) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            z-index: 20;
+        }
+
+        .sticky-note.dragging {
+            transform: rotate(5deg) scale(1.05);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .note-controls {
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sticky-note:hover .note-controls {
+            opacity: 1;
+        }
+
+        .control-btn {
+            background: rgba(0,0,0,0.2);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(0,0,0,0.4);
+            transform: scale(1.1);
+        }
+
+        .note-content {
+            background: none;
+            border: none;
+            width: 100%;
+            height: 150px;
+            resize: none;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            color: inherit;
+            outline: none;
+        }
+
+        .note-timestamp {
+            font-size: 10px;
+            color: rgba(0,0,0,0.5);
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        /* Note Colors */
+        .yellow { background: var(--yellow); color: #333; }
+        .pink { background: var(--pink); color: white; }
+        .blue { background: var(--blue); color: white; }
+        .green { background: var(--green); color: white; }
+        .orange { background: var(--orange); color: white; }
+        .purple { background: var(--purple); color: white; }
+        .teal { background: var(--teal); color: white; }
+
+        .stats {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1001;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            color: #333;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .modal-content input, .modal-content textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .modal-content textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .modal-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .floating-menu {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .priority-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+
+        .priority-low { background: var(--success); }
+        .priority-medium { background: var(--warning); }
+        .priority-high { background: var(--danger); }
+
+        .note-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .tag {
+            background: rgba(0,0,0,0.2);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .tag:hover {
+            background: rgba(0,0,0,0.3);
+        }
+
+        .reminder-indicator {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            font-size: 12px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .note-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            padding: 10px;
+            display: none;
+            z-index: 1000;
+            min-width: 150px;
+        }
+
+        .note-menu.active {
+            display: block;
+        }
+
+        .menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 13px;
+            color: #333;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            transition: left 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .filter-chip {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-chip:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .filter-chip.active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .connection-line {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            height: 2px;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .note-size-controls {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sticky-note:hover .note-size-controls {
+            opacity: 1;
+        }
+
+        .size-btn {
+            background: rgba(0,0,0,0.2);
+            color: white;
+            border: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toolbar-extended {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .view-mode-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .view-mode-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .view-mode-btn.active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .board.kanban {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px;
+        }
+
+        .kanban-column {
+            min-width: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .kanban-header {
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+
+        .kanban-note {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .kanban-note:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 350px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: rgba(244, 67, 54, 0.9);
+        }
+
+        .notification.warning {
+            background: rgba(255, 152, 0, 0.9);
+        }
+
+        .auto-save-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auto-save-indicator.saving {
+            opacity: 1;
+        }
+
+        .floating-btn {
+            background: var(--primary-light);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .floating-btn:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            pointer-events: none;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        @keyframes noteAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8) rotate(-10deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .note-appear {
+            animation: noteAppear 0.5s ease-out;
+        }
+
+        .hidden {
+            opacity: 0.3;
+            transform: scale(0.95);
+        }
+
+        .ai-suggestion {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.1);
+            padding: 8px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: rgba(0,0,0,0.7);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .ai-suggestion:hover {
+            background: rgba(0,0,0,0.15);
+        }
+
+        .timeline-view {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .timeline-header {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .timeline-container {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background: rgba(255,255,255,0.2);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            width: 45%;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .timeline-item:nth-child(odd) {
+            align-self: flex-start;
+        }
+
+        .timeline-item:nth-child(even) {
+            align-self: flex-end;
+        }
+
+        .timeline-content {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .timeline-date {
+            color: var(--secondary);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .toolbar {
+                width: 100%;
+                justify-content: center;
+                margin-top: 15px;
+            }
+            
+            .color-picker {
+                margin-left: 0;
+                margin-top: 10px;
+                justify-content: center;
+            }
+            
+            .search-container {
+                margin-left: 0;
+                margin-top: 10px;
+                width: 100%;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .search-input:focus {
+                width: 100%;
+            }
+            
+            .board {
+                padding: 20px 10px;
+            }
+            
+            .sticky-note {
+                width: 180px;
+                min-height: 180px;
+            }
+            
+            .floating-menu {
+                bottom: 10px;
+                right: 10px;
+            }
+            
+            .floating-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-sticky-note"></i>
+            <span>Adobe Sticky Notes</span>
+        </div>
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="createNote()">
+                <i class="fas fa-plus"></i> Add Note
+            </button>
+            <button class="btn" onclick="createTemplateNote()">
+                <i class="fas fa-clipboard-list"></i> Templates
+            </button>
+            <button class="btn" onclick="toggleSidebar()">
+                <i class="fas fa-filter"></i> Filters
+            </button>
+            <button class="btn" onclick="toggleGrid()">
+                <i class="fas fa-th"></i> Toggle Grid
+            </button>
+            <button class="btn" onclick="toggleConnections()">
+                <i class="fas fa-link"></i> Connect Notes
+            </button>
+            
+            <div class="color-picker">
+                <div class="color-btn yellow active" data-color="yellow" onclick="selectColor('yellow')"></div>
+                <div class="color-btn pink" data-color="pink" onclick="selectColor('pink')"></div>
+                <div class="color-btn blue" data-color="blue" onclick="selectColor('blue')"></div>
+                <div class="color-btn green" data-color="green" onclick="selectColor('green')"></div>
+                <div class="color-btn orange" data-color="orange" onclick="selectColor('orange')"></div>
+                <div class="color-btn purple" data-color="purple" onclick="selectColor('purple')"></div>
+                <div class="color-btn teal" data-color="teal" onclick="selectColor('teal')"></div>
+            </div>
+            
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search notes..." onkeyup="searchNotes(this.value)">
+            </div>
+        </div>
+        
+        <div class="toolbar-extended">
+            <button class="view-mode-btn active" onclick="setViewMode('freeform')">
+                <i class="fas fa-border-none"></i> Freeform
+            </button>
+            <button class="view-mode-btn" onclick="setViewMode('kanban')">
+                <i class="fas fa-columns"></i> Kanban
+            </button>
+            <button class="view-mode-btn" onclick="setViewMode('timeline')">
+                <i class="fas fa-stream"></i> Timeline
+            </button>
+            <select class="btn" onchange="sortNotes(this.value)" style="height: 36px;">
+                <option value="">Sort By</option>
+                <option value="date">Date Created</option>
+                <option value="priority">Priority</option>
+                <option value="color">Color</option>
+            </select>
+            <button class="btn btn-warning" onclick="clearAllNotes()">
+                <i class="fas fa-trash-alt"></i> Clear All
+            </button>
+        </div>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <button class="btn" style="margin-bottom: 20px;" onclick="toggleSidebar()">
+            <i class="fas fa-times"></i> Close
+        </button>
+        
+        <div class="sidebar-section">
+            <h3><i class="fas fa-filter"></i> Filter by Priority</h3>
+            <div class="filter-chips">
+                <div class="filter-chip" data-filter="priority-low">
+                    <i class="fas fa-circle" style="color: var(--success);"></i> Low
+                </div>
+                <div class="filter-chip active" data-filter="priority-medium">
+                    <i class="fas fa-circle" style="color: var(--warning);"></i> Medium
+                </div>
+                <div class="filter-chip" data-filter="priority-high">
+                    <i class="fas fa-circle" style="color: var(--danger);"></i> High
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <h3><i class="fas fa-tags"></i> Filter by Tags</h3>
+            <div class="filter-chips" id="tagFilters">
+                <div class="filter-chip" data-filter="tag-important">
+                    <i class="fas fa-tag"></i> #important
+                </div>
+                <div class="filter-chip" data-filter="tag-idea">
+                    <i class="fas fa-tag"></i> #idea
+                </div>
+                <div class="filter-chip" data-filter="tag-todo">
+                    <i class="fas fa-tag"></i> #todo
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <h3><i class="fas fa-history"></i> Recent Notes</h3>
+            <div id="recentNotes">
+                <div class="sidebar-item">
+                    <i class="fas fa-sticky-note yellow"></i> Project Ideas
+                </div>
+                <div class="sidebar-item">
+                    <i class="fas fa-sticky-note blue"></i> Meeting Notes
+                </div>
+                <div class="sidebar-item">
+                    <i class="fas fa-sticky-note green"></i> To-Do List
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <h3><i class="fas fa-bell"></i> Reminders</h3>
+            <div id="remindersList">
+                <div class="sidebar-item">
+                    <i class="fas fa-clock"></i> Team Meeting - Today 2 PM
+                </div>
+                <div class="sidebar-item">
+                    <i class="fas fa-clock"></i> Project Deadline - Tomorrow
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div><i class="fas fa-sticky-note"></i> Total Notes: <span id="noteCount">0</span></div>
+        <div><i class="fas fa-sync"></i> Last Updated: <span id="lastUpdate">Never</span></div>
+        <div><i class="fas fa-filter"></i> Active Filters: <span id="activeFilters">0</span></div>
+    </div>
+
+    <div class="board" id="board">
+        <div class="grid-lines" id="gridLines"></div>
+        <div id="connectionLines"></div>
+        <!-- Notes will be rendered here -->
+    </div>
+
+    <div class="floating-menu">
+        <button class="floating-btn" onclick="createNote()" title="Add Note">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="floating-btn" onclick="createTemplateNote()" title="Add Template">
+            <i class="fas fa-clipboard-list"></i>
+        </button>
+        <button class="floating-btn" onclick="toggleFullscreen()" title="Fullscreen">
+            <i class="fas fa-expand"></i>
+        </button>
+        <button class="floating-btn" onclick="showHelp()" title="Help">
+            <i class="fas fa-question"></i>
+        </button>
+        <button class="floating-btn" onclick="undoLastAction()" title="Undo">
+            <i class="fas fa-undo"></i>
+        </button>
+    </div>
+
+    <div class="notification" id="notification"></div>
+    <div class="auto-save-indicator" id="autoSaveIndicator">
+        <i class="fas fa-sync fa-spin"></i> Auto-saving...
+    </div>
+
+    <div class="modal" id="helpModal">
+        <div class="modal-content">
+            <h3><i class="fas fa-question-circle"></i> How to Use Adobe Sticky Notes</h3>
+            <p>• Click "Add Note" to create a new sticky note<br>
+            • Drag notes to move them around<br>
+            • Double-click to edit note content<br>
+            • Right-click for context menu with advanced options<br>
+            • Use color picker to change note colors<br>
+            • Set priorities with the priority button<br>
+            • Add tags by typing #tag in note content<br>
+            • Set reminders with the reminder button<br>
+            • Connect notes by clicking "Connect Notes" then clicking two notes<br>
+            • Use filters to organize and find notes<br>
+            • Switch between Freeform, Kanban, and Timeline views<br>
+            • Export/Import to save your work<br>
+            • Undo last action with Ctrl+Z</p>
+            <div class="modal-buttons">
+                <button class="modal-btn primary" onclick="closeModal()">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="templateModal">
+        <div class="modal-content">
+            <h3><i class="fas fa-clipboard-list"></i> Choose Template</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0;">
+                <button class="modal-btn secondary" onclick="createFromTemplate('meeting')">
+                    <i class="fas fa-users"></i> Meeting Notes
+                </button>
+                <button class="modal-btn secondary" onclick="createFromTemplate('todo')">
+                    <i class="fas fa-tasks"></i> To-Do List
+                </button>
+                <button class="modal-btn secondary" onclick="createFromTemplate('idea')">
+                    <i class="fas fa-lightbulb"></i> Idea Brainstorm
+                </button>
+                <button class="modal-btn secondary" onclick="createFromTemplate('project')">
+                    <i class="fas fa-project-diagram"></i> Project Plan
+                </button>
+                <button class="modal-btn secondary" onclick="createFromTemplate('reminder')">
+                    <i class="fas fa-bell"></i> Reminder
+                </button>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn primary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="reminderModal">
+        <div class="modal-content">
+            <h3><i class="fas fa-bell"></i> Set Reminder</h3>
+            <input type="datetime-local" id="reminderDateTime" style="width: 100%; padding: 10px; margin: 10px 0;">
+            <input type="text" id="reminderText" placeholder="Reminder message..." style="width: 100%; padding: 10px; margin: 10px 0;">
+            <div class="modal-buttons">
+                <button class="modal-btn primary" onclick="setReminder()">Set Reminder</button>
+                <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class StickyNotesBoard {
+            constructor() {
+                this.notes = [];
+                this.selectedColor = 'yellow';
+                this.noteCounter = 0;
+                this.isDragging = false;
+                this.dragOffset = { x: 0, y: 0 };
+                this.gridVisible = false;
+                this.viewMode = 'freeform';
+                this.connectionMode = false;
+                this.selectedNotes = [];
+                this.connections = [];
+                this.actionHistory = [];
+                this.currentReminderId = null;
+                this.templates = {
+                    meeting: "📅 Meeting Notes\n\nDate: \nAttendees: \nAgenda: \nAction Items: ",
+                    todo: "✅ To-Do List\n\n☐ Task 1\n☐ Task 2\n☐ Task 3",
+                    idea: "💡 Idea Brainstorm\n\nCore concept: \nBenefits: \nChallenges: \nNext steps: ",
+                    project: "🎯 Project Plan\n\nGoal: \nTimeline: \nResources: \nMilestones: ",
+                    reminder: "⏰ Reminder\n\nWhat: \nWhen: \nWhere: \nWhy: "
+                };
+                this.filters = {
+                    priority: [],
+                    tags: [],
+                    color: []
+                };
+                this.init();
+            }
+
+            init() {
+                this.loadNotes();
+                this.updateStats();
+                this.setupEventListeners();
+                this.checkReminders();
+                setInterval(() => this.checkReminders(), 60000);
+                this.renderAllNotes();
+            }
+
+            setupEventListeners() {
+                document.addEventListener('mousedown', this.handleMouseDown.bind(this));
+                document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+                document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+                document.addEventListener('keydown', this.handleKeyDown.bind(this));
+                document.addEventListener('contextmenu', this.handleContextMenu.bind(this));
+                
+                // Setup filter chips
+                document.querySelectorAll('.filter-chip').forEach(chip => {
+                    chip.addEventListener('click', () => this.toggleFilter(chip.dataset.filter));
+                });
+                
+                // Auto-save every 30 seconds
+                setInterval(() => this.saveNotes(), 30000);
+            }
+
+            createNote(x = null, y = null, content = '', color = null, priority = 'medium', tags = [], reminder = null) {
+                const note = {
+                    id: ++this.noteCounter,
+                    content: content,
+                    color: color || this.selectedColor,
+                    x: x || Math.random() * (window.innerWidth - 250),
+                    y: y || Math.random() * (window.innerHeight - 300) + 200,
+                    timestamp: new Date().toISOString(),
+                    width: 200,
+                    height: 200,
+                    priority: priority,
+                    tags: tags,
+                    reminder: reminder,
+                    connections: []
+                };
+
+                this.notes.push(note);
+                this.renderNote(note);
+                this.saveNotes();
+                this.updateStats();
+                this.updateTagFilters();
+                this.showNotification('Note created successfully!');
+                this.addToHistory('create', note);
+                return note;
+            }
+
+            renderNote(note) {
+                if (this.viewMode === 'kanban' || this.viewMode === 'timeline') return;
+                
+                const noteElement = document.createElement('div');
+                noteElement.className = `sticky-note ${note.color} note-appear`;
+                noteElement.style.left = note.x + 'px';
+                noteElement.style.top = note.y + 'px';
+                noteElement.style.width = note.width + 'px';
+                noteElement.style.height = note.height + 'px';
+                noteElement.dataset.id = note.id;
+
+                const priorityDot = note.priority !== 'medium' ? `<div class="priority-indicator priority-${note.priority}"></div>` : '';
+                const reminderIcon = note.reminder ? '<div class="reminder-indicator">🔔</div>' : '';
+                const tags = note.tags.map(tag => `<span class="tag">#${tag}</span>`).join('');
+
+                noteElement.innerHTML = `
+                    ${priorityDot}
+                    ${reminderIcon}
+                    <div class="note-header">
+                        <span style="font-weight: bold;">Note #${note.id}</span>
+                        <div class="note-controls">
+                            <button class="control-btn" onclick="board.setPriority(${note.id})" title="Priority">⚡</button>
+                            <button class="control-btn" onclick="board.setReminder(${note.id})" title="Reminder">⏰</button>
+                            <button class="control-btn" onclick="board.duplicateNote(${note.id})" title="Duplicate">⧉</button>
+                            <button class="control-btn" onclick="board.changeNoteColor(${note.id})" title="Change Color">🎨</button>
+                            <button class="control-btn" onclick="board.deleteNote(${note.id})" title="Delete">×</button>
+                        </div>
+                    </div>
+                    <div class="note-tags">${tags}</div>
+                    <textarea class="note-content" placeholder="Click to edit...">${note.content}</textarea>
+                    <div class="note-timestamp">${new Date(note.timestamp).toLocaleDateString()}</div>
+                    <div class="note-size-controls">
+                        <button class="size-btn" onclick="board.resizeNote(${note.id}, 'small')" title="Small">S</button>
+                        <button class="size-btn" onclick="board.resizeNote(${note.id}, 'medium')" title="Medium">M</button>
+                        <button class="size-btn" onclick="board.resizeNote(${note.id}, 'large')" title="Large">L</button>
+                    </div>
+                    <div class="ai-suggestion" onclick="board.applyAISuggestion(${note.id})">
+                        <i class="fas fa-robot"></i> AI Suggestion: ${this.generateAISuggestion(note)}
+                    </div>
+                `;
+
+                const textarea = noteElement.querySelector('.note-content');
+                textarea.addEventListener('input', (e) => {
+                    note.content = e.target.value;
+                    this.extractTags(note);
+                    this.saveNotes();
+                    this.updateStats();
+                    this.updateTagFilters();
+                    this.showAutoSaveIndicator();
+                });
+
+                textarea.addEventListener('focus', () => {
+                    noteElement.style.zIndex = '50';
+                });
+
+                // Add click handler for connection mode
+                noteElement.addEventListener('click', (e) => {
+                    if (this.connectionMode && !e.target.classList.contains('control-btn') && !e.target.classList.contains('size-btn')) {
+                        this.handleNoteConnection(note.id);
+                        e.stopPropagation();
+                    }
+                });
+
+                document.getElementById('board').appendChild(noteElement);
+            }
+
+            extractTags(note) {
+                const tagRegex = /#(\w+)/g;
+                const matches = note.content.match(tagRegex);
+                note.tags = matches ? matches.map(tag => tag.substring(1)) : [];
+            }
+
+            generateAISuggestion(note) {
+                const suggestions = [
+                    "Add action items with due dates",
+                    "Break into smaller tasks",
+                    "Add relevant links or references",
+                    "Set priority for this note",
+                    "Connect to related notes"
+                ];
+                return suggestions[Math.floor(Math.random() * suggestions.length)];
+            }
+
+            applyAISuggestion(noteId) {
+                const note = this.notes.find(n => n.id === noteId);
+                if (note) {
+                    note.content += "\n\n- [ ] Action item added by AI";
+                    this.refreshNote(note);
+                    this.showNotification('AI suggestion applied!');
+                }
+            }
+
+            setPriority(id) {
+                const note = this.notes.find(n => n.id === id);
+                const priorities = ['low', 'medium', 'high'];
+                const currentIndex = priorities.indexOf(note.priority);
+                note.priority = priorities[(currentIndex + 1) % priorities.length];
+                
+                this.refreshNote(note);
+                this.saveNotes();
+                this.showNotification(`Priority set to ${note.priority}`);
+            }
+
+            setReminder(id) {
+                this.currentReminderId = id;
+                document.getElementById('reminderModal').style.display = 'flex';
+            }
+
+            setReminderFromModal() {
+                const datetime = document.getElementById('reminderDateTime').value;
+                const message = document.getElementById('reminderText').value;
+                
+                if (datetime && this.currentReminderId) {
+                    const note = this.notes.find(n => n.id === this.currentReminderId);
+                    note.reminder = {
+                        datetime: datetime,
+                        message: message || 'Reminder',
+                        active: true
+                    };
+                    this.refreshNote(note);
+                    this.saveNotes();
+                    this.showNotification('Reminder set successfully!');
+                }
+                
+                this.closeModal();
+            }
+
+            checkReminders() {
+                const now = new Date();
+                this.notes.forEach(note => {
+                    if (note.reminder && note.reminder.active) {
+                        const reminderTime = new Date(note.reminder.datetime);
+                        if (reminderTime <= now) {
+                            this.showNotification(`Reminder: ${note.reminder.message}`, 'reminder');
+                            note.reminder.active = false;
+                            this.refreshNote(note);
+                        }
+                    }
+                });
+            }
+
+            resizeNote(id, size) {
+                const note = this.notes.find(n => n.id === id);
+                const sizes = { small: 150, medium: 200, large: 300 };
+                note.width = sizes[size];
+                note.height = sizes[size];
+                
+                const noteElement = document.querySelector(`[data-id="${id}"]`);
+                if (noteElement) {
+                    noteElement.style.width = note.width + 'px';
+                    noteElement.style.height = note.height + 'px';
+                }
+                
+                this.saveNotes();
+            }
+
+            handleNoteConnection(noteId) {
+                if (this.selectedNotes.includes(noteId)) return;
+                
+                this.selectedNotes.push(noteId);
+                
+                if (this.selectedNotes.length === 2) {
+                    this.createConnection(this.selectedNotes[0], this.selectedNotes[1]);
+                    this.selectedNotes = [];
+                }
+            }
+
+            createConnection(noteId1, noteId2) {
+                const connection = { id: Date.now(), from: noteId1, to: noteId2 };
+                this.connections.push(connection);
+                
+                const note1 = this.notes.find(n => n.id === noteId1);
+                const note2 = this.notes.find(n => n.id === noteId2);
+                
+                note1.connections.push(noteId2);
+                note2.connections.push(noteId1);
+                
+                this.renderConnection(connection);
+                this.saveNotes();
+                this.showNotification('Notes connected!');
+            }
+
+            renderConnection(connection) {
+                const note1 = document.querySelector(`[data-id="${connection.from}"]`);
+                const note2 = document.querySelector(`[data-id="${connection.to}"]`);
+                
+                if (!note1 || !note2) return;
+                
+                const rect1 = note1.getBoundingClientRect();
+                const rect2 = note2.getBoundingClientRect();
+                const boardRect = document.getElementById('board').getBoundingClientRect();
+                
+                const x1 = rect1.left + rect1.width / 2 - boardRect.left;
+                const y1 = rect1.top + rect1.height / 2 - boardRect.top;
+                const x2 = rect2.left + rect2.width / 2 - boardRect.left;
+                const y2 = rect2.top + rect2.height / 2 - boardRect.top;
+                
+                const length = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                
+                const line = document.createElement('div');
+                line.className = 'connection-line';
+                line.dataset.connectionId = connection.id;
+                line.style.width = length + 'px';
+                line.style.left = x1 + 'px';
+                line.style.top = y1 + 'px';
+                line.style.transform = `rotate(${angle}deg)`;
+                line.style.transformOrigin = '0 0';
+                
+                document.getElementById('connectionLines').appendChild(line);
+            }
+
+            deleteNote(id) {
+                const note = this.notes.find(n => n.id === id);
+                if (!note) return;
+                
+                this.addToHistory('delete', note);
+                
+                const noteElement = document.querySelector(`[data-id="${id}"]`);
+                if (noteElement) {
+                    noteElement.style.animation = 'noteAppear 0.3s ease-out reverse';
+                    setTimeout(() => {
+                        noteElement.remove();
+                        this.notes = this.notes.filter(note => note.id !== id);
+                        this.saveNotes();
+                        this.updateStats();
+                        this.showNotification('Note deleted');
+                    }, 300);
+                }
+            }
+
+            duplicateNote(id) {
+                const note = this.notes.find(n => n.id === id);
+                if (note) {
+                    const newNote = {...note};
+                    newNote.id = ++this.noteCounter;
+                    newNote.x = note.x + 20;
+                    newNote.y = note.y + 20;
+                    newNote.timestamp = new Date().toISOString();
+                    
+                    this.notes.push(newNote);
+                    this.renderNote(newNote);
+                    this.saveNotes();
+                    this.updateStats();
+                    this.showNotification('Note duplicated');
+                }
+            }
+
+            changeNoteColor(id) {
+                const note = this.notes.find(n => n.id === id);
+                if (!note) return;
+                
+                const colors = ['yellow', 'pink', 'blue', 'green', 'orange', 'purple', 'teal'];
+                const currentIndex = colors.indexOf(note.color);
+                const newColor = colors[(currentIndex + 1) % colors.length];
+                
+                note.color = newColor;
+                this.refreshNote(note);
+                this.saveNotes();
+            }
+
+            refreshNote(note) {
+                const noteElement = document.querySelector(`[data-id="${note.id}"]`);
+                if (noteElement) {
+                    noteElement.remove();
+                }
+                this.renderNote(note);
+            }
+
+            renderAllNotes() {
+                document.getElementById('board').innerHTML = '<div class="grid-lines" id="gridLines"></div><div id="connectionLines"></div>';
+                this.notes.forEach(note => this.renderNote(note));
+                this.connections.forEach(conn => this.renderConnection(conn));
+            }
+
+            handleMouseDown(e) {
+                const noteElement = e.target.closest('.sticky-note');
+                if (noteElement && !e.target.classList.contains('note-content') && !e.target.classList.contains('control-btn') && !e.target.classList.contains('ai-suggestion')) {
+                    this.isDragging = true;
+                    this.dragElement = noteElement;
+                    
+                    const rect = noteElement.getBoundingClientRect();
+                    this.dragOffset.x = e.clientX - rect.left;
+                    this.dragOffset.y = e.clientY - rect.top;
+                    
+                    noteElement.classList.add('dragging');
+                    noteElement.style.zIndex = '100';
+                    
+                    e.preventDefault();
+                }
+            }
+
+            handleMouseMove(e) {
+                if (this.isDragging && this.dragElement) {
+                    const x = e.clientX - this.dragOffset.x;
+                    const y = e.clientY - this.dragOffset.y;
+                    
+                    this.dragElement.style.left = x + 'px';
+                    this.dragElement.style.top = y + 'px';
+                    
+                    const note = this.notes.find(n => n.id == this.dragElement.dataset.id);
+                    if (note) {
+                        note.x = x;
+                        note.y = y;
+                    }
+                }
+            }
+
+            handleMouseUp() {
+                if (this.isDragging) {
+                    this.isDragging = false;
+                    if (this.dragElement) {
+                        this.dragElement.classList.remove('dragging');
+                        this.dragElement.style.zIndex = '10';
+                        this.dragElement = null;
+                        this.saveNotes();
+                    }
+                }
+            }
+
+            handleKeyDown(e) {
+                if (e.key === 'Delete' && e.target.classList.contains('note-content')) {
+                    if (e.ctrlKey) {
+                        const noteElement = e.target.closest('.sticky-note');
+                        if (noteElement) {
+                            this.deleteNote(parseInt(noteElement.dataset.id));
+                        }
+                    }
+                }
+                
+                // Undo with Ctrl+Z
+                if (e.ctrlKey && e.key === 'z') {
+                    this.undoLastAction();
+                }
+            }
+
+            handleContextMenu(e) {
+                const noteElement = e.target.closest('.sticky-note');
+                if (noteElement) {
+                    e.preventDefault();
+                    const noteId = parseInt(noteElement.dataset.id);
+                    const note = this.notes.find(n => n.id === noteId);
+                    
+                    if (note) {
+                        this.showNoteContextMenu(e, note);
+                    }
+                }
+            }
+
+            showNoteContextMenu(e, note) {
+                // Remove any existing context menu
+                const existingMenu = document.querySelector('.note-menu');
+                if (existingMenu) existingMenu.remove();
+                
+                const menu = document.createElement('div');
+                menu.className = 'note-menu active';
+                menu.style.left = e.pageX + 'px';
+                menu.style.top = e.pageY + 'px';
+                
+                menu.innerHTML = `
+                    <div class="menu-item" onclick="board.setPriority(${note.id})">
+                        <i class="fas fa-bolt"></i> Set Priority
+                    </div>
+                    <div class="menu-item" onclick="board.setReminder(${note.id})">
+                        <i class="fas fa-bell"></i> Set Reminder
+                    </div>
+                    <div class="menu-item" onclick="board.duplicateNote(${note.id})">
+                        <i class="fas fa-copy"></i> Duplicate
+                    </div>
+                    <div class="menu-item" onclick="board.changeNoteColor(${note.id})">
+                        <i class="fas fa-palette"></i> Change Color
+                    </div>
+                    <div class="menu-item" onclick="board.deleteNote(${note.id})">
+                        <i class="fas fa-trash"></i> Delete
+                    </div>
+                `;
+                
+                document.body.appendChild(menu);
+                
+                // Close menu when clicking elsewhere
+                setTimeout(() => {
+                    document.addEventListener('click', function closeMenu() {
+                        menu.remove();
+                        document.removeEventListener('click', closeMenu);
+                    });
+                }, 100);
+            }
+
+            searchNotes(query) {
+                const notes = document.querySelectorAll('.sticky-note');
+                notes.forEach(note => {
+                    const content = note.querySelector('.note-content').value.toLowerCase();
+                    if (content.includes(query.toLowerCase()) || query === '') {
+                        note.classList.remove('hidden');
+                    } else {
+                        note.classList.add('hidden');
+                    }
+                });
+            }
+
+            clearAllNotes() {
+                if (confirm('Are you sure you want to delete all notes? This cannot be undone.')) {
+                    this.notes = [];
+                    this.noteCounter = 0;
+                    this.connections = [];
+                    document.getElementById('board').innerHTML = '<div class="grid-lines" id="gridLines"></div><div id="connectionLines"></div>';
+                    this.saveNotes();
+                    this.updateStats();
+                    this.showNotification('All notes cleared');
+                }
+            }
+
+            exportNotes() {
+                const data = JSON.stringify({
+                    notes: this.notes,
+                    noteCounter: this.noteCounter,
+                    connections: this.connections
+                }, null, 2);
+                
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `sticky-notes-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                this.showNotification('Notes exported successfully');
+            }
+
+            importNotes() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                const data = JSON.parse(e.target.result);
+                                this.notes = data.notes || [];
+                                this.noteCounter = data.noteCounter || 0;
+                                this.connections = data.connections || [];
+                                this.renderAllNotes();
+                                this.saveNotes();
+                                this.updateStats();
+                                this.showNotification('Notes imported successfully');
+                            } catch (error) {
+                                this.showNotification('Error importing notes: Invalid file format', 'error');
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                };
+                input.click();
+            }
+
+            toggleGrid() {
+                this.gridVisible = !this.gridVisible;
+                const gridLines = document.getElementById('gridLines');
+                gridLines.style.display = this.gridVisible ? 'block' : 'none';
+                this.showNotification(`Grid ${this.gridVisible ? 'enabled' : 'disabled'}`);
+            }
+
+            toggleConnections() {
+                this.connectionMode = !this.connectionMode;
+                this.selectedNotes = [];
+                this.showNotification(`Connection mode ${this.connectionMode ? 'enabled' : 'disabled'}`);
+            }
+
+            toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('active');
+            }
+
+            setViewMode(mode) {
+                this.viewMode = mode;
+                document.querySelectorAll('.view-mode-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.view-mode-btn').forEach(btn => {
+                    if (btn.textContent.includes(mode.charAt(0).toUpperCase() + mode.slice(1))) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                const board = document.getElementById('board');
+                board.className = 'board';
+                
+                if (mode === 'kanban') {
+                    board.classList.add('kanban');
+                    this.renderKanbanView();
+                } else if (mode === 'timeline') {
+                    board.classList.add('timeline');
+                    this.renderTimelineView();
+                } else {
+                    this.renderAllNotes();
+                }
+            }
+
+            renderKanbanView() {
+                const board = document.getElementById('board');
+                board.innerHTML = `
+                    <div class="kanban-column">
+                        <div class="kanban-header">To Do</div>
+                    </div>
+                    <div class="kanban-column">
+                        <div class="kanban-header">In Progress</div>
+                    </div>
+                    <div class="kanban-column">
+                        <div class="kanban-header">Done</div>
+                    </div>
+                `;
+                
+                this.notes.forEach(note => {
+                    const status = note.tags.includes('done') ? 2 : note.tags.includes('progress') ? 1 : 0;
+                    const column = document.querySelectorAll('.kanban-column')[status];
+                    
+                    const noteElement = document.createElement('div');
+                    noteElement.className = 'kanban-note';
+                    noteElement.style.backgroundColor = `var(--${note.color})`;
+                    noteElement.innerHTML = `
+                        <div class="note-content">${note.content}</div>
+                        <div class="note-tags">${note.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}</div>
+                    `;
+                    
+                    column.appendChild(noteElement);
+                });
+            }
+
+            renderTimelineView() {
+                const board = document.getElementById('board');
+                board.innerHTML = `
+                    <div class="timeline-view">
+                        <div class="timeline-header">Project Timeline</div>
+                        <div class="timeline-container">
+                            <div class="timeline-line"></div>
+                            <!-- Timeline items will be added here -->
+                        </div>
+                    </div>
+                `;
+                
+                const timelineContainer = document.querySelector('.timeline-container');
+                
+                // Sample timeline items
+                const timelineItems = [
+                    { date: '2023-07-01', title: 'Project Kickoff', content: 'Initial meeting with stakeholders' },
+                    { date: '2023-07-15', title: 'Design Phase', content: 'UI/UX design finalized' },
+                    { date: '2023-08-01', title: 'Development Start', content: 'Coding phase begins' },
+                    { date: '2023-08-20', title: 'Testing Phase', content: 'QA testing started' },
+                    { date: '2023-09-01', title: 'Launch', content: 'Product release' }
+                ];
+                
+                timelineItems.forEach((item, index) => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'timeline-item';
+                    
+                    itemElement.innerHTML = `
+                        <div class="timeline-content">
+                            <div class="timeline-date">${item.date}</div>
+                            <h4>${item.title}</h4>
+                            <p>${item.content}</p>
+                        </div>
+                    `;
+                    
+                    timelineContainer.appendChild(itemElement);
+                });
+            }
+
+            toggleFilter(filter) {
+                // Implementation for filter toggling
+                const chip = document.querySelector(`.filter-chip[data-filter="${filter}"]`);
+                chip.classList.toggle('active');
+                
+                // Update filters and re-render notes
+                if (filter.startsWith('priority-')) {
+                    const priority = filter.split('-')[1];
+                    const index = this.filters.priority.indexOf(priority);
+                    if (index === -1) {
+                        this.filters.priority.push(priority);
+                    } else {
+                        this.filters.priority.splice(index, 1);
+                    }
+                }
+                
+                this.applyFilters();
+                this.updateStats();
+            }
+
+            applyFilters() {
+                // Apply all active filters to notes
+                this.notes.forEach(note => {
+                    const noteElement = document.querySelector(`[data-id="${note.id}"]`);
+                    if (noteElement) {
+                        let visible = true;
+                        
+                        // Priority filter
+                        if (this.filters.priority.length > 0 && !this.filters.priority.includes(note.priority)) {
+                            visible = false;
+                        }
+                        
+                        // Add other filters as needed
+                        
+                        if (visible) {
+                            noteElement.classList.remove('hidden');
+                        } else {
+                            noteElement.classList.add('hidden');
+                        }
+                    }
+                });
+            }
+
+            updateTagFilters() {
+                // Collect all unique tags from notes
+                const allTags = new Set();
+                this.notes.forEach(note => {
+                    note.tags.forEach(tag => allTags.add(tag));
+                });
+                
+                // Update tag filters UI
+                const tagFilters = document.getElementById('tagFilters');
+                tagFilters.innerHTML = '';
+                
+                allTags.forEach(tag => {
+                    const chip = document.createElement('div');
+                    chip.className = 'filter-chip';
+                    chip.dataset.filter = `tag-${tag}`;
+                    chip.innerHTML = `<i class="fas fa-tag"></i> #${tag}`;
+                    chip.addEventListener('click', () => this.toggleFilter(`tag-${tag}`));
+                    tagFilters.appendChild(chip);
+                });
+            }
+
+            sortNotes(criteria) {
+                switch(criteria) {
+                    case 'date':
+                        this.notes.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                        break;
+                    case 'priority':
+                        const priorityOrder = { high: 0, medium: 1, low: 2 };
+                        this.notes.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+                        break;
+                    case 'color':
+                        this.notes.sort((a, b) => a.color.localeCompare(b.color));
+                        break;
+                }
+                
+                this.renderAllNotes();
+                this.showNotification(`Notes sorted by ${criteria}`);
+            }
+
+            autoArrangeNotes() {
+                // Arrange notes in a grid
+                const containerWidth = window.innerWidth - 80;
+                const noteWidth = 200;
+                const noteHeight = 200;
+                const margin = 20;
+                
+                const notesPerRow = Math.floor(containerWidth / (noteWidth + margin));
+                let row = 0, col = 0;
+                
+                this.notes.forEach((note, index) => {
+                    note.x = col * (noteWidth + margin) + margin;
+                    note.y = row * (noteHeight + margin) + margin;
+                    
+                    col++;
+                    if (col >= notesPerRow) {
+                        col = 0;
+                        row++;
+                    }
+                });
+                
+                this.renderAllNotes();
+                this.saveNotes();
+                this.showNotification('Notes auto-arranged');
+            }
+
+            saveNotes() {
+                localStorage.setItem('stickyNotes', JSON.stringify({
+                    notes: this.notes,
+                    noteCounter: this.noteCounter,
+                    connections: this.connections
+                }));
+                
+                this.showAutoSaveIndicator();
+            }
+
+            loadNotes() {
+                const savedData = localStorage.getItem('stickyNotes');
+                if (savedData) {
+                    try {
+                        const data = JSON.parse(savedData);
+                        this.notes = data.notes || [];
+                        this.noteCounter = data.noteCounter || 0;
+                        this.connections = data.connections || [];
+                    } catch (e) {
+                        console.error('Error loading notes:', e);
+                    }
+                }
+            }
+
+            updateStats() {
+                document.getElementById('noteCount').textContent = this.notes.length;
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                document.getElementById('activeFilters').textContent = 
+                    this.filters.priority.length + this.filters.tags.length + this.filters.color.length;
+            }
+
+            showNotification(message, type = 'success') {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = 'notification';
+                
+                if (type === 'error') {
+                    notification.classList.add('error');
+                } else if (type === 'reminder') {
+                    notification.classList.add('warning');
+                }
+                
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+
+            showAutoSaveIndicator() {
+                const indicator = document.getElementById('autoSaveIndicator');
+                indicator.classList.add('saving');
+                
+                setTimeout(() => {
+                    indicator.classList.remove('saving');
+                }, 2000);
+            }
+
+            addToHistory(action, note) {
+                this.actionHistory.push({
+                    action,
+                    note: {...note},
+                    timestamp: new Date()
+                });
+                
+                // Keep only the last 20 actions
+                if (this.actionHistory.length > 20) {
+                    this.actionHistory.shift();
+                }
+            }
+
+            undoLastAction() {
+                if (this.actionHistory.length === 0) return;
+                
+                const lastAction = this.actionHistory.pop();
+                
+                switch(lastAction.action) {
+                    case 'create':
+                        this.notes = this.notes.filter(n => n.id !== lastAction.note.id);
+                        this.showNotification('Note creation undone');
+                        break;
+                    case 'delete':
+                        this.notes.push(lastAction.note);
+                        this.showNotification('Note deletion undone');
+                        break;
+                    // Add other action types as needed
+                }
+                
+                this.renderAllNotes();
+                this.saveNotes();
+                this.updateStats();
+            }
+
+            createFromTemplate(templateKey) {
+                if (this.templates[templateKey]) {
+                    this.createNote(null, null, this.templates[templateKey]);
+                    this.closeModal();
+                }
+            }
+
+            closeModal() {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            }
+
+            toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+
+            showHelp() {
+                document.getElementById('helpModal').style.display = 'flex';
+            }
+        }
+
+        // Initialize the board
+        const board = new StickyNotesBoard();
+
+        // Global functions for HTML onclick events
+        function createNote() {
+            board.createNote();
+        }
+
+        function createTemplateNote() {
+            document.getElementById('templateModal').style.display = 'flex';
+        }
+
+        function selectColor(color) {
+            board.selectedColor = color;
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-color="${color}"]`).classList.add('active');
+        }
+
+        function searchNotes(query) {
+            board.searchNotes(query);
+        }
+
+        function clearAllNotes() {
+            board.clearAllNotes();
+        }
+
+        function exportNotes() {
+            board.exportNotes();
+        }
+
+        function importNotes() {
+            board.importNotes();
+        }
+
+        function toggleGrid() {
+            board.toggleGrid();
+        }
+
+        function toggleConnections() {
+            board.toggleConnections();
+        }
+
+        function toggleSidebar() {
+            board.toggleSidebar();
+        }
+
+        function setViewMode(mode) {
+            board.setViewMode(mode);
+        }
+
+        function sortNotes(criteria) {
+            board.sortNotes(criteria);
+        }
+
+        function autoArrangeNotes() {
+            board.autoArrangeNotes();
+        }
+
+        function setReminder() {
+            board.setReminderFromModal();
+        }
+
+        function closeModal() {
+            board.closeModal();
+        }
+
+        function toggleFullscreen() {
+            board.toggleFullscreen();
+        }
+
+        function showHelp() {
+            board.showHelp();
+        }
+
+        function undoLastAction() {
+            board.undoLastAction();
+        }
+
+        // Initial setup
+        window.onload = function() {
+            // Create some sample notes
+            board.createNote(100, 100, "Welcome to Adobe Sticky Notes!\n\nThis is a sample note. Try creating your own!", "blue");
+            board.createNote(350, 150, "Project Ideas:\n- AI-powered design assistant\n- Real-time collaboration\n- Version history", "yellow", "high", ["idea", "important"]);
+            board.createNote(200, 300, "To-Do List:\n☐ Fix layout issues\n☐ Add more templates\n☐ Implement sharing", "green", "medium", ["todo"]);
+            
+            // Show welcome notification
+            setTimeout(() => {
+                board.showNotification("Welcome to Adobe Sticky Notes! Try creating a new note or using a template.");
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
