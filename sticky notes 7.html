@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Sticky Notes Board | Adobe Challenge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            overflow-x: auto;
+            color: #f0f0f0;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            padding: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            font-weight: 600;
+            background: linear-gradient(90deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c1ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            background-size: 300% 300%;
+            animation: gradientAnimation 8s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.active {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            transform: scale(0.95);
+            box-shadow: 0 4px 20px rgba(46, 204, 113, 0.3);
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 8px 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-input {
+            border: none;
+            outline: none;
+            padding: 8px;
+            font-size: 14px;
+            background: transparent;
+            width: 200px;
+            color: white;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .board-container {
+            position: relative;
+            width: 100%;
+            min-height: calc(100vh - 200px);
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .board {
+            position: relative;
+            width: 100%;
+            min-height: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .sticky-note {
+            position: absolute;
+            width: 240px;
+            min-height: 240px;
+            border-radius: 15px;
+            cursor: move;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .sticky-note:hover {
+            transform: rotate(0.5deg) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .sticky-note.dragging {
+            transform: rotate(1deg) scale(1.03);
+            z-index: 1001;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .sticky-note.selected {
+            border: 2px solid #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+        }
+
+        .sticky-note.priority-high {
+            border-left: 5px solid #ff4757;
+        }
+
+        .sticky-note.priority-medium {
+            border-left: 5px solid #ffa502;
+        }
+
+        .sticky-note.priority-low {
+            border-left: 5px solid #2ed573;
+        }
+
+        .note-header {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .note-title {
+            font-weight: bold;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            flex-grow: 1;
+            margin-right: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .note-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .note-btn {
+            width: 26px;
+            height: 26px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .note-btn:hover {
+            transform: scale(1.2);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .note-content {
+            padding: 15px;
+            height: calc(100% - 60px);
+            overflow-y: auto;
+        }
+
+        .note-textarea {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: none;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .note-display {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .note-footer {
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .timestamp {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .priority-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .priority-high .priority-indicator {
+            background: #ff4757;
+        }
+
+        .priority-medium .priority-indicator {
+            background: #ffa502;
+        }
+
+        .priority-low .priority-indicator {
+            background: #2ed573;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin-right: 5px;
+            display: inline-block;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Color themes */
+        .yellow { background: linear-gradient(145deg, #ffd166, #ff9e00); }
+        .blue { background: linear-gradient(145deg, #118ab2, #073b4c); }
+        .green { background: linear-gradient(145deg, #06d6a0, #048a81); }
+        .pink { background: linear-gradient(145deg, #ff7096, #ff0a54); }
+        .purple { background: linear-gradient(145deg, #9d4edd, #5a189a); }
+        .orange { background: linear-gradient(145deg, #ff9e00, #ff6d00); }
+        .red { background: linear-gradient(145deg, #ef476f, #d90429); }
+        .teal { background: linear-gradient(145deg, #4cc9f0, #4895ef); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 40, 0.95);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal h3 {
+            margin-bottom: 20px;
+            color: white;
+            font-size: 1.8rem;
+            text-align: center;
+            background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #f8f9fa;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4895ef;
+            box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.2);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-option:hover,
+        .color-option.selected {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            min-height: 46px;
+            align-items: center;
+        }
+
+        .tag-item {
+            background: #4895ef;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .tag-input {
+            border: none;
+            outline: none;
+            flex-grow: 1;
+            min-width: 100px;
+            padding: 4px;
+            background: transparent;
+            color: white;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 12px 20px;
+            border-radius: 15px;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            display: block;
+            background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .floating-menu {
+            position: fixed;
+            bottom: 120px;
+            right: 30px;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 999;
+        }
+
+        .floating-menu.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .floating-menu-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: white;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-menu-btn:hover {
+            transform: scale(1.15);
+        }
+
+        .ai-suggestion {
+            background: rgba(72, 149, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid rgba(72, 149, 239, 0.3);
+        }
+
+        .ai-suggestion h4 {
+            color: #4895ef;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suggestion-content {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .feature-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .collaboration {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .user-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #4895ef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .export-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .keyboard-shortcuts {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+
+        .shortcut-key {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #ffd166;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            z-index: 3000;
+            animation: slideInDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 350px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes slideInDown {
+            from { transform: translateY(-60px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .notification.error {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        .notification.warning {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+
+        .notification.info {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+        }
+
+        .auto-save-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #2ecc71;
+            border-radius: 20px;
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .auto-save-indicator.show {
+            opacity: 1;
+        }
+
+        .connection-line {
+            position: absolute;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .connection-line svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .connection-line line {
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+        }
+
+        .note-linking {
+            border: 2px dashed #ff6b6b;
+            animation: pulseBorder 2s infinite;
+        }
+
+        @keyframes pulseBorder {
+            0% { border-color: #ff6b6b; }
+            50% { border-color: #ff9a9e; }
+            100% { border-color: #ff6b6b; }
+        }
+
+        .reminder-indicator {
+            position: absolute;
+            top: 5px;
+            right: 30px;
+            width: 12px;
+            height: 12px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .ai-tools {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .ai-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(72, 149, 239, 0.15);
+            border: 1px solid rgba(72, 149, 239, 0.3);
+            color: #4895ef;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .ai-btn:hover {
+            background: rgba(72, 149, 239, 0.25);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .sticky-note {
+                width: 200px;
+                min-height: 200px;
+            }
+            
+            .search-input {
+                width: 150px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .floating-menu {
+                right: 20px;
+                bottom: 100px;
+            }
+            
+            .stat-item {
+                min-width: 100px;
+                padding: 10px 15px;
+            }
+            
+            .stat-number {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-sticky-note"></i> Professional Sticky Notes Board</h1>
+        <div class="toolbar">
+            <button class="btn" onclick="showAddNoteModal()">
+                <i class="fas fa-plus"></i> Add Note
+            </button>
+            <button class="btn" onclick="showBulkActions()">
+                <i class="fas fa-clipboard-list"></i> Bulk Actions
+            </button>
+            <button class="btn" onclick="exportNotes()">
+                <i class="fas fa-file-export"></i> Export
+            </button>
+            <button class="btn" onclick="importNotes()">
+                <i class="fas fa-file-import"></i> Import
+            </button>
+            <button class="btn" id="connectionBtn" onclick="toggleConnectionMode()">
+                <i class="fas fa-link"></i> Connect Notes
+            </button>
+            <button class="btn" onclick="toggleAI()">
+                <i class="fas fa-robot"></i> AI Assistant
+            </button>
+            <button class="btn" onclick="clearAllNotes()">
+                <i class="fas fa-trash"></i> Clear All
+            </button>
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search notes..." onkeyup="searchNotes(this.value)">
+                <i class="fas fa-search"></i>
+            </div>
+        </div>
+        <div class="filter-container">
+            <button class="btn filter-btn active" onclick="filterNotes('all')">All Notes</button>
+            <button class="btn filter-btn" onclick="filterNotes('high')">High Priority</button>
+            <button class="btn filter-btn" onclick="filterNotes('medium')">Medium Priority</button>
+            <button class="btn filter-btn" onclick="filterNotes('low')">Low Priority</button>
+            <button class="btn filter-btn" onclick="filterNotes('today')">Today</button>
+            <button class="btn filter-btn" onclick="filterNotes('reminders')">Reminders</button>
+            <button class="btn filter-btn" onclick="filterNotes('ai')">AI Suggestions</button>
+        </div>
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number" id="totalNotes">12</span>
+                <span>Total Notes</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="todayNotes">3</span>
+                <span>Today</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="highPriorityNotes">4</span>
+                <span>High Priority</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="collaborators">2</span>
+                <span>Collaborators</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="board-container">
+        <div class="board" id="board">
+            <div class="grid-lines"></div>
+            <!-- Notes will be dynamically added here -->
+            <div class="sticky-note yellow" style="top: 50px; left: 80px;" data-id="1">
+                <div class="feature-badge">New</div>
+                <div class="note-header">
+                    <div class="note-title">Adobe Interview Prep</div>
+                    <div class="note-controls">
+                        <button class="note-btn edit-btn"><i class="fas fa-edit"></i></button>
+                        <button class="note-btn delete-btn"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="note-content">
+                    <div class="note-display">- Review creative cloud APIs
+- Prepare portfolio examples
+- Research Adobe XD integrations
+- Practice design thinking</div>
+                </div>
+                <div class="note-footer">
+                    <div class="timestamp">Today, 10:30 AM</div>
+                    <div>
+                        <span class="tag">Interview</span>
+                        <span class="tag">Prep</span>
+                    </div>
+                </div>
+                <div class="priority-indicator"></div>
+                <div class="collaboration">
+                    <div class="user-avatar">JS</div>
+                    <div class="user-avatar">ML</div>
+                </div>
+            </div>
+            
+            <div class="sticky-note blue priority-high" style="top: 60px; left: 350px;" data-id="2">
+                <div class="reminder-indicator"></div>
+                <div class="note-header">
+                    <div class="note-title">Project Deadline</div>
+                    <div class="note-controls">
+                        <button class="note-btn edit-btn"><i class="fas fa-edit"></i></button>
+                        <button class="note-btn delete-btn"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="note-content">
+                    <div class="note-display">Finalize sticky notes app by Friday EOD. 
+                    
+Key features:
+- Real-time collaboration
+- AI integration
+- Export to PDF/PNG
+- Mobile responsive</div>
+                </div>
+                <div class="note-footer">
+                    <div class="timestamp">Tomorrow, 3:00 PM</div>
+                    <div>
+                        <span class="tag">Urgent</span>
+                        <span class="tag">Project</span>
+                    </div>
+                </div>
+                <div class="priority-indicator"></div>
+            </div>
+            
+            <div class="sticky-note green" style="top: 300px; left: 150px;" data-id="3">
+                <div class="note-header">
+                    <div class="note-title">Design Ideas</div>
+                    <div class="note-controls">
+                        <button class="note-btn edit-btn"><i class="fas fa-edit"></i></button>
+                        <button class="note-btn delete-btn"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="note-content">
+                    <div class="note-display">Explore glassmorphism design
+Add subtle animations
+Implement dark/light mode
+Use vibrant gradients</div>
+                </div>
+                <div class="note-footer">
+                    <div class="timestamp">Yesterday, 4:45 PM</div>
+                    <div>
+                        <span class="tag">Design</span>
+                        <span class="tag">UI/UX</span>
+                    </div>
+                </div>
+                <div class="priority-indicator"></div>
+            </div>
+            
+            <div class="sticky-note purple" style="top: 200px; left: 500px;" data-id="4">
+                <div class="ai-suggestion">
+                    <h4><i class="fas fa-robot"></i> AI Suggestion</h4>
+                    <div class="suggestion-content">Consider adding natural language processing for automatic tagging and categorization of notes.</div>
+                </div>
+                <div class="note-header">
+                    <div class="note-title">Feature Brainstorm</div>
+                    <div class="note-controls">
+                        <button class="note-btn edit-btn"><i class="fas fa-edit"></i></button>
+                        <button class="note-btn delete-btn"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="note-content">
+                    <div class="note-display">Potential features:
+- Voice-to-note
+- Image attachments
+- Version history
+- Calendar integration</div>
+                </div>
+                <div class="note-footer">
+                    <div class="timestamp">Today, 9:15 AM</div>
+                    <div>
+                        <span class="tag">Ideas</span>
+                        <span class="tag">AI</span>
+                    </div>
+                </div>
+                <div class="priority-indicator"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-menu" id="floatingMenu">
+        <button class="floating-menu-btn" style="background: #3498db;" onclick="showAddNoteModal()" title="Add Note"><i class="fas fa-plus"></i></button>
+        <button class="floating-menu-btn" style="background: #9b59b6;" onclick="toggleFullscreen()" title="Fullscreen"><i class="fas fa-expand"></i></button>
+        <button class="floating-menu-btn" style="background: #2ecc71;" onclick="showKeyboardShortcuts()" title="Shortcuts"><i class="fas fa-keyboard"></i></button>
+        <button class="floating-menu-btn" style="background: #e74c3c;" onclick="clearAllNotes()" title="Clear All"><i class="fas fa-trash"></i></button>
+    </div>
+
+    <button class="floating-btn" onclick="toggleFloatingMenu()" title="Menu"><i class="fas fa-bars"></i></button>
+
+    <!-- Add/Edit Note Modal -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"><i class="fas fa-sticky-note"></i> Add New Note</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="noteTitle"><i class="fas fa-heading"></i> Title:</label>
+                    <input type="text" id="noteTitle" placeholder="Enter note title...">
+                </div>
+                <div class="form-group">
+                    <label for="notePriority"><i class="fas fa-exclamation-circle"></i> Priority:</label>
+                    <select id="notePriority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="noteContent"><i class="fas fa-align-left"></i> Content:</label>
+                <textarea id="noteContent" rows="6" placeholder="Enter your note content..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="noteCategory"><i class="fas fa-tag"></i> Category:</label>
+                    <select id="noteCategory">
+                        <option value="general">General</option>
+                        <option value="work">Work</option>
+                        <option value="personal">Personal</option>
+                        <option value="ideas">Ideas</option>
+                        <option value="todo">To-Do</option>
+                        <option value="meetings">Meetings</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="noteReminder"><i class="fas fa-bell"></i> Reminder:</label>
+                    <input type="datetime-local" id="noteReminder">
+                </div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-tags"></i> Tags:</label>
+                <div class="tags-input" id="tagsInput">
+                    <div class="tag-item">Design <span class="tag-remove">×</span></div>
+                    <div class="tag-item">Adobe <span class="tag-remove">×</span></div>
+                    <input type="text" class="tag-input" placeholder="Add tags..." onkeydown="handleTagInput(event)">
+                </div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-palette"></i> Color:</label>
+                <div class="color-picker">
+                    <div class="color-option yellow selected" onclick="selectColor(this, 'yellow')"></div>
+                    <div class="color-option blue" onclick="selectColor(this, 'blue')"></div>
+                    <div class="color-option green" onclick="selectColor(this, 'green')"></div>
+                    <div class="color-option pink" onclick="selectColor(this, 'pink')"></div>
+                    <div class="color-option purple" onclick="selectColor(this, 'purple')"></div>
+                    <div class="color-option orange" onclick="selectColor(this, 'orange')"></div>
+                    <div class="color-option red" onclick="selectColor(this, 'red')"></div>
+                    <div class="color-option teal" onclick="selectColor(this, 'teal')"></div>
+                </div>
+            </div>
+            
+            <div class="ai-tools">
+                <button class="ai-btn"><i class="fas fa-magic"></i> Enhance Text</button>
+                <button class="ai-btn"><i class="fas fa-lightbulb"></i> Suggest Ideas</button>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px;">
+                <button class="btn" onclick="closeModal()"><i class="fas fa-times"></i> Cancel</button>
+                <button class="btn" style="background: linear-gradient(45deg, #4ECDC4, #44A08D);" onclick="saveNote()"><i class="fas fa-save"></i> Save Note</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div id="shortcutsModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h3>
+            
+            <div class="keyboard-shortcuts">
+                <div class="shortcut-item">
+                    <span>Create New Note</span>
+                    <span class="shortcut-key">Ctrl + N</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Save Note</span>
+                    <span class="shortcut-key">Ctrl + S</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Search Notes</span>
+                    <span class="shortcut-key">Ctrl + F</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Delete Note</span>
+                    <span class="shortcut-key">Del</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Toggle Connection Mode</span>
+                    <span class="shortcut-key">Ctrl + L</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Bulk Select</span>
+                    <span class="shortcut-key">Ctrl + Click</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Toggle AI Assistant</span>
+                    <span class="shortcut-key">Ctrl + A</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Export Board</span>
+                    <span class="shortcut-key">Ctrl + E</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; margin-top: 30px;">
+                <button class="btn" onclick="closeModal()"><i class="fas fa-times"></i> Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="auto-save-indicator" id="autoSaveIndicator">
+        <i class="fas fa-sync-alt fa-spin"></i> Auto-saving...
+    </div>
+
+    <script>
+        // State management
+        let notes = [];
+        let selectedNoteId = null;
+        let isConnectionMode = false;
+        let firstConnectionNote = null;
+        let isAIActive = true;
+        let isDragging = false;
+        let dragOffsetX, dragOffsetY;
+        let currentNote = null;
+
+        // DOM Elements
+        const board = document.getElementById('board');
+        const noteModal = document.getElementById('noteModal');
+        const shortcutsModal = document.getElementById('shortcutsModal');
+        const autoSaveIndicator = document.getElementById('autoSaveIndicator');
+        const connectionBtn = document.getElementById('connectionBtn');
+        const floatingMenu = document.getElementById('floatingMenu');
+
+        // Initialize the app
+        function init() {
+            loadNotes();
+            renderNotes();
+            setupEventListeners();
+            showNotification('Welcome to Professional Sticky Notes!', 'info');
+            simulateAutoSave();
+        }
+
+        // Load notes from localStorage
+        function loadNotes() {
+            const savedNotes = localStorage.getItem('stickyNotes');
+            if (savedNotes) {
+                notes = JSON.parse(savedNotes);
+            } else {
+                // Sample notes for demo
+                notes = [
+                    {
+                        id: 1,
+                        title: 'Adobe Interview Prep',
+                        content: '- Review creative cloud APIs\n- Prepare portfolio examples\n- Research Adobe XD integrations\n- Practice design thinking',
+                        color: 'yellow',
+                        priority: 'medium',
+                        tags: ['Interview', 'Prep'],
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        collaborators: ['JS', 'ML'],
+                        hasAI: false
+                    },
+                    {
+                        id: 2,
+                        title: 'Project Deadline',
+                        content: 'Finalize sticky notes app by Friday EOD. \n\nKey features:\n- Real-time collaboration\n- AI integration\n- Export to PDF/PNG\n- Mobile responsive',
+                        color: 'blue',
+                        priority: 'high',
+                        tags: ['Urgent', 'Project'],
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        reminder: new Date(Date.now() + 86400000), // Tomorrow
+                        hasAI: false
+                    },
+                    {
+                        id: 3,
+                        title: 'Design Ideas',
+                        content: 'Explore glassmorphism design\nAdd subtle animations\nImplement dark/light mode\nUse vibrant gradients',
+                        color: 'green',
+                        priority: 'low',
+                        tags: ['Design', 'UI/UX'],
+                        createdAt: new Date(Date.now() - 86400000), // Yesterday
+                        updatedAt: new Date(Date.now() - 86400000),
+                        hasAI: false
+                    },
+                    {
+                        id: 4,
+                        title: 'Feature Brainstorm',
+                        content: 'Potential features:\n- Voice-to-note\n- Image attachments\n- Version history\n- Calendar integration',
+                        color: 'purple',
+                        priority: 'medium',
+                        tags: ['Ideas', 'AI'],
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        aiSuggestion: 'Consider adding natural language processing for automatic tagging and categorization of notes.',
+                        hasAI: true
+                    }
+                ];
+                saveNotes();
+            }
+        }
+
+        // Save notes to localStorage
+        function saveNotes() {
+            localStorage.setItem('stickyNotes', JSON.stringify(notes));
+            showAutoSaveIndicator();
+        }
+
+        // Render notes to the board
+        function renderNotes() {
+            board.innerHTML = '<div class="grid-lines"></div>';
+            notes.forEach(note => {
+                const noteElement = createNoteElement(note);
+                board.appendChild(noteElement);
+            });
+            updateStats();
+        }
+
+        // Create a note DOM element
+        function createNoteElement(note) {
+            const noteElement = document.createElement('div');
+            noteElement.className = `sticky-note ${note.color} priority-${note.priority}`;
+            noteElement.style.top = `${note.position?.y || Math.random() * 300}px`;
+            noteElement.style.left = `${note.position?.x || Math.random() * 500}px`;
+            noteElement.dataset.id = note.id;
+            
+            // Add AI badge if it has an AI suggestion
+            if (note.aiSuggestion) {
+                noteElement.innerHTML += `<div class="feature-badge">AI</div>`;
+            }
+            
+            // Add reminder indicator if reminder is set and not passed
+            if (note.reminder && new Date(note.reminder) > new Date()) {
+                noteElement.innerHTML += `<div class="reminder-indicator"></div>`;
+            }
+            
+            noteElement.innerHTML += `
+                <div class="note-header">
+                    <div class="note-title">${note.title}</div>
+                    <div class="note-controls">
+                        <button class="note-btn edit-btn"><i class="fas fa-edit"></i></button>
+                        <button class="note-btn delete-btn"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="note-content">
+                    <div class="note-display">${note.content}</div>
+                </div>
+                <div class="note-footer">
+                    <div class="timestamp">${formatDate(note.updatedAt)}</div>
+                    <div>
+                        ${note.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="priority-indicator"></div>
+            `;
+            
+            // Add collaborators if any
+            if (note.collaborators && note.collaborators.length > 0) {
+                noteElement.innerHTML += `
+                    <div class="collaboration">
+                        ${note.collaborators.map(collab => `<div class="user-avatar">${collab}</div>`).join('')}
+                    </div>
+                `;
+            }
+            
+            // Add AI suggestion if present
+            if (note.aiSuggestion) {
+                noteElement.innerHTML += `
+                    <div class="ai-suggestion">
+                        <h4><i class="fas fa-robot"></i> AI Suggestion</h4>
+                        <div class="suggestion-content">${note.aiSuggestion}</div>
+                    </div>
+                `;
+            }
+            
+            // Add event listeners to the buttons
+            const editBtn = noteElement.querySelector('.edit-btn');
+            const deleteBtn = noteElement.querySelector('.delete-btn');
+            
+            editBtn.addEventListener('click', () => editNote(note.id));
+            deleteBtn.addEventListener('click', () => deleteNote(note.id));
+            
+            // Add drag functionality
+            noteElement.addEventListener('mousedown', startDrag);
+            
+            // Add click event for selection and connection
+            noteElement.addEventListener('click', (e) => {
+                if (isConnectionMode) {
+                    handleNoteConnection(note.id);
+                } else {
+                    selectNote(note.id);
+                }
+            });
+            
+            return noteElement;
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                return `Today, ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            } else if (diffDays === 1) {
+                return `Yesterday, ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            } else {
+                return date.toLocaleDateString();
+            }
+        }
+
+        // Show add note modal
+        function showAddNoteModal() {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-sticky-note"></i> Add New Note';
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+            document.getElementById('notePriority').value = 'medium';
+            document.getElementById('noteCategory').value = 'general';
+            document.getElementById('noteReminder').value = '';
+            document.getElementById('tagsInput').innerHTML = '<input type="text" class="tag-input" placeholder="Add tags..." onkeydown="handleTagInput(event)">';
+            
+            // Reset color picker
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector('.color-option.yellow').classList.add('selected');
+            
+            noteModal.style.display = 'block';
+            selectedNoteId = null;
+        }
+
+        // Edit an existing note
+        function editNote(noteId) {
+            const note = notes.find(n => n.id === noteId);
+            if (!note) return;
+            
+            selectedNoteId = noteId;
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Note';
+            document.getElementById('noteTitle').value = note.title;
+            document.getElementById('noteContent').value = note.content;
+            document.getElementById('notePriority').value = note.priority;
+            document.getElementById('noteCategory').value = note.category || 'general';
+            
+            if (note.reminder) {
+                const reminderDate = new Date(note.reminder);
+                const formattedDate = reminderDate.toISOString().slice(0, 16);
+                document.getElementById('noteReminder').value = formattedDate;
+            } else {
+                document.getElementById('noteReminder').value = '';
+            }
+            
+            // Set tags
+            const tagsInput = document.getElementById('tagsInput');
+            tagsInput.innerHTML = '';
+            note.tags.forEach(tag => {
+                const tagElement = document.createElement('div');
+                tagElement.className = 'tag-item';
+                tagElement.innerHTML = `${tag} <span class="tag-remove" onclick="removeTag(this)">×</span>`;
+                tagsInput.appendChild(tagElement);
+            });
+            tagsInput.innerHTML += '<input type="text" class="tag-input" placeholder="Add tags..." onkeydown="handleTagInput(event)">';
+            
+            // Set color
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`.color-option.${note.color}`).classList.add('selected');
+            
+            noteModal.style.display = 'block';
+        }
+
+        // Save note (new or edited)
+        function saveNote() {
+            const title = document.getElementById('noteTitle').value;
+            const content = document.getElementById('noteContent').value;
+            const priority = document.getElementById('notePriority').value;
+            const category = document.getElementById('noteCategory').value;
+            const reminder = document.getElementById('noteReminder').value;
+            const tags = Array.from(document.querySelectorAll('#tagsInput .tag-item'))
+                .map(item => item.textContent.replace('×', '').trim());
+            
+            const colorOption = document.querySelector('.color-option.selected');
+            const color = colorOption ? colorOption.classList[1] : 'yellow';
+            
+            if (!title.trim() || !content.trim()) {
+                showNotification('Title and content are required', 'error');
+                return;
+            }
+            
+            if (selectedNoteId) {
+                // Update existing note
+                const noteIndex = notes.findIndex(n => n.id === selectedNoteId);
+                if (noteIndex !== -1) {
+                    notes[noteIndex].title = title;
+                    notes[noteIndex].content = content;
+                    notes[noteIndex].priority = priority;
+                    notes[noteIndex].category = category;
+                    notes[noteIndex].tags = tags;
+                    notes[noteIndex].color = color;
+                    notes[noteIndex].updatedAt = new Date();
+                    
+                    if (reminder) {
+                        notes[noteIndex].reminder = new Date(reminder);
+                    } else {
+                        delete notes[noteIndex].reminder;
+                    }
+                }
+            } else {
+                // Create new note
+                const newNote = {
+                    id: Date.now(),
+                    title,
+                    content,
+                    priority,
+                    category,
+                    tags,
+                    color,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    position: { x: Math.random() * 500, y: Math.random() * 300 }
+                };
+                
+                if (reminder) {
+                    newNote.reminder = new Date(reminder);
+                }
+                
+                notes.push(newNote);
+            }
+            
+            saveNotes();
+            renderNotes();
+            closeModal();
+            showNotification('Note saved successfully!', 'info');
+        }
+
+        // Delete a note
+        function deleteNote(noteId) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                notes = notes.filter(note => note.id !== noteId);
+                saveNotes();
+                renderNotes();
+                showNotification('Note deleted', 'warning');
+            }
+        }
+
+        // Clear all notes
+        function clearAllNotes() {
+            if (confirm('Are you sure you want to delete ALL notes? This cannot be undone.')) {
+                notes = [];
+                saveNotes();
+                renderNotes();
+                showNotification('All notes cleared', 'warning');
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            noteModal.style.display = 'none';
+            shortcutsModal.style.display = 'none';
+        }
+
+        // Toggle floating menu
+        function toggleFloatingMenu() {
+            floatingMenu.classList.toggle('show');
+        }
+
+        // Toggle connection mode
+        function toggleConnectionMode() {
+            isConnectionMode = !isConnectionMode;
+            connectionBtn.classList.toggle('active', isConnectionMode);
+            
+            if (isConnectionMode) {
+                showNotification('Connection mode activated. Click on two notes to connect them.', 'info');
+            } else {
+                firstConnectionNote = null;
+                showNotification('Connection mode deactivated', 'info');
+            }
+        }
+
+        // Handle note connection
+        function handleNoteConnection(noteId) {
+            if (!firstConnectionNote) {
+                firstConnectionNote = noteId;
+                const noteElement = document.querySelector(`.sticky-note[data-id="${noteId}"]`);
+                noteElement.classList.add('note-linking');
+                showNotification('Now select the second note to connect to', 'info');
+            } else {
+                if (firstConnectionNote === noteId) {
+                    showNotification('Cannot connect a note to itself', 'error');
+                    return;
+                }
+                
+                // Create connection
+                showNotification(`Connected note ${firstConnectionNote} to note ${noteId}`, 'info');
+                
+                // Reset UI
+                const firstNoteElement = document.querySelector(`.sticky-note[data-id="${firstConnectionNote}"]`);
+                firstNoteElement.classList.remove('note-linking');
+                firstConnectionNote = null;
+                isConnectionMode = false;
+                connectionBtn.classList.remove('active');
+            }
+        }
+
+        // Toggle AI assistant
+        function toggleAI() {
+            isAIActive = !isAIActive;
+            showNotification(`AI Assistant ${isAIActive ? 'enabled' : 'disabled'}`, 'info');
+        }
+
+        // Show keyboard shortcuts
+        function showKeyboardShortcuts() {
+            shortcutsModal.style.display = 'block';
+        }
+
+        // Export notes
+        function exportNotes() {
+            const dataStr = JSON.stringify(notes);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'sticky-notes.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            document.body.appendChild(linkElement);
+            
+            linkElement.click();
+            document.body.removeChild(linkElement);
+            
+            showNotification('Notes exported successfully!', 'info');
+        }
+
+        // Import notes
+        function importNotes() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const importedNotes = JSON.parse(e.target.result);
+                        notes = importedNotes;
+                        saveNotes();
+                        renderNotes();
+                        showNotification('Notes imported successfully!', 'info');
+                    } catch (error) {
+                        showNotification('Invalid file format', 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+
+        // Search notes
+        function searchNotes(query) {
+            if (!query) {
+                document.querySelectorAll('.sticky-note').forEach(note => {
+                    note.style.display = 'block';
+                });
+                return;
+            }
+            
+            const searchTerm = query.toLowerCase();
+            
+            document.querySelectorAll('.sticky-note').forEach(note => {
+                const title = note.querySelector('.note-title').textContent.toLowerCase();
+                const content = note.querySelector('.note-display').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || content.includes(searchTerm)) {
+                    note.style.display = 'block';
+                    
+                    // Highlight matches
+                    const contentElement = note.querySelector('.note-display');
+                    const regex = new RegExp(query, 'gi');
+                    contentElement.innerHTML = contentElement.textContent.replace(regex, match => 
+                        `<span class="search-highlight">${match}</span>`
+                    );
+                } else {
+                    note.style.display = 'none';
+                }
+            });
+        }
+
+        // Filter notes
+        function filterNotes(filter) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.sticky-note').forEach(note => {
+                const noteId = parseInt(note.dataset.id);
+                const noteData = notes.find(n => n.id === noteId);
+                
+                note.style.display = 'block';
+                
+                switch(filter) {
+                    case 'high':
+                        if (noteData.priority !== 'high') note.style.display = 'none';
+                        break;
+                    case 'medium':
+                        if (noteData.priority !== 'medium') note.style.display = 'none';
+                        break;
+                    case 'low':
+                        if (noteData.priority !== 'low') note.style.display = 'none';
+                        break;
+                    case 'today':
+                        const updatedDate = new Date(noteData.updatedAt);
+                        const today = new Date();
+                        if (updatedDate.toDateString() !== today.toDateString()) {
+                            note.style.display = 'none';
+                        }
+                        break;
+                    case 'reminders':
+                        if (!noteData.reminder || new Date(noteData.reminder) < new Date()) {
+                            note.style.display = 'none';
+                        }
+                        break;
+                    case 'ai':
+                        if (!noteData.aiSuggestion) {
+                            note.style.display = 'none';
+                        }
+                        break;
+                }
+            });
+        }
+
+        // Drag functionality
+        function startDrag(e) {
+            if (e.target.classList.contains('note-btn')) return;
+            
+            isDragging = true;
+            currentNote = this;
+            const rect = currentNote.getBoundingClientRect();
+            
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
+            
+            currentNote.classList.add('dragging');
+            
+            document.addEventListener('mousemove', dragNote);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function dragNote(e) {
+            if (!isDragging || !currentNote) return;
+            
+            const x = e.clientX - dragOffsetX;
+            const y = e.clientY - dragOffsetY;
+            
+            currentNote.style.left = `${x}px`;
+            currentNote.style.top = `${y}px`;
+        }
+
+        function stopDrag() {
+            if (!isDragging || !currentNote) return;
+            
+            isDragging = false;
+            currentNote.classList.remove('dragging');
+            
+            // Save position
+            const noteId = parseInt(currentNote.dataset.id);
+            const note = notes.find(n => n.id === noteId);
+            
+            if (note) {
+                note.position = {
+                    x: parseInt(currentNote.style.left),
+                    y: parseInt(currentNote.style.top)
+                };
+                saveNotes();
+            }
+            
+            currentNote = null;
+            document.removeEventListener('mousemove', dragNote);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        // Select a note
+        function selectNote(noteId) {
+            document.querySelectorAll('.sticky-note').forEach(note => {
+                note.classList.remove('selected');
+            });
+            
+            const selectedNote = document.querySelector(`.sticky-note[data-id="${noteId}"]`);
+            if (selectedNote) {
+                selectedNote.classList.add('selected');
+                selectedNote.style.zIndex = '1002';
+                setTimeout(() => {
+                    selectedNote.style.zIndex = '';
+                }, 2000);
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalNotes').textContent = notes.length;
+            
+            const todayCount = notes.filter(note => {
+                const updatedDate = new Date(note.updatedAt);
+                const today = new Date();
+                return updatedDate.toDateString() === today.toDateString();
+            }).length;
+            document.getElementById('todayNotes').textContent = todayCount;
+            
+            const highPriorityCount = notes.filter(note => note.priority === 'high').length;
+            document.getElementById('highPriorityNotes').textContent = highPriorityCount;
+            
+            // Simulate collaborators
+            document.getElementById('collaborators').textContent = Math.min(notes.length, 5);
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            document.querySelectorAll('.notification').forEach(el => el.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Show auto-save indicator
+        function showAutoSaveIndicator() {
+            autoSaveIndicator.classList.add('show');
+            setTimeout(() => {
+                autoSaveIndicator.classList.remove('show');
+            }, 2000);
+        }
+
+        // Simulate auto-save
+        function simulateAutoSave() {
+            setInterval(() => {
+                if (notes.length > 0 && Math.random() > 0.7) {
+                    saveNotes();
+                }
+            }, 10000);
+        }
+
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Handle tag input
+        function handleTagInput(e) {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                const tag = e.target.value.trim();
+                const tagElement = document.createElement('div');
+                tagElement.className = 'tag-item';
+                tagElement.innerHTML = `${tag} <span class="tag-remove" onclick="removeTag(this)">×</span>`;
+                
+                e.target.parentNode.insertBefore(tagElement, e.target);
+                e.target.value = '';
+            }
+        }
+
+        // Remove tag
+        function removeTag(element) {
+            element.parentNode.remove();
+        }
+
+        // Select color
+        function selectColor(element, color) {
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === noteModal || e.target === shortcutsModal) {
+                    closeModal();
+                }
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'n') {
+                    e.preventDefault();
+                    showAddNoteModal();
+                }
+                
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    if (selectedNoteId) {
+                        saveNote();
+                    }
+                }
+                
+                if (e.ctrlKey && e.key === 'f') {
+                    e.preventDefault();
+                    document.querySelector('.search-input').focus();
+                }
+                
+                if (e.ctrlKey && e.key === 'l') {
+                    e.preventDefault();
+                    toggleConnectionMode();
+                }
+                
+                if (e.key === 'Escape') {
+                    closeModal();
+                    isConnectionMode = false;
+                    connectionBtn.classList.remove('active');
+                    if (firstConnectionNote) {
+                        const noteElement = document.querySelector(`.sticky-note[data-id="${firstConnectionNote}"]`);
+                        noteElement.classList.remove('note-linking');
+                        firstConnectionNote = null;
+                    }
+                }
+            });
+        }
+
+        // Initialize the app when the page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
